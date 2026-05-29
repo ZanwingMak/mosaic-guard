@@ -1,0 +1,35 @@
+{
+  "expo": {
+    "name": "MosaicGuard",
+    "slug": "mosaic-guard",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "mosaicguard",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.maizhenying.mosaicguard"
+    },
+    "android": {
+      "package": "com.maizhenying.mosaicguard"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "MosaicGuard 需要访问相册以选择待打码的图片",
+          "cameraPermission": "MosaicGuard 需要使用相机直接拍照打码"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
