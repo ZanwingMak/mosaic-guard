@@ -18,6 +18,10 @@
       "bundler": "metro",
       "output": "single"
     },
+    "experiments": {
+      "typedRoutes": true,
+      "baseUrl": "/mosaic-guard"
+    },
     "plugins": [
       "expo-router",
       [
@@ -27,9 +31,6 @@
           "cameraPermission": "MosaicGuard 需要使用相机直接拍照打码"
         }
       ]
-    ],
-    "experiments": {
-      "typedRoutes": true
-    }
+    ]
   }
 }
