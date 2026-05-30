@@ -2,6 +2,8 @@
 
 > 截图里的秘密，交给隐马抹掉。
 
+**🌐 在线体验：https://zanwingmak.github.io/mosaic-guard/**（手机/电脑浏览器直接打开即可）
+
 一个**100% 端侧运行**的图片敏感信息打码工具：人脸、身份证号、手机号、银行卡、邮箱、车牌号、APP 截图里的隐藏水印，AI 自动识别 + 一键打码。
 单仓库三端（Web / iOS / Android），底层用 Expo SDK 52 + React Native + react-native-web。
 
