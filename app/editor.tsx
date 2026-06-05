@@ -1,6 +1,7 @@
 // 编辑器主页面：组合左侧工具栏 + 中央画布 + 右侧效果面板 + 底部 AI 操作条
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, Pressable, Platform, useWindowDimensions } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Platform, useWindowDimensions, Alert, Linking } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { colors, font, radius, spacing } from '@/theme';
 import { Button, Icon } from '@/components/ui';
@@ -14,6 +15,9 @@ import { detectSensitiveText, preloadOCR } from '@/lib/ocr';
 import { scanHiddenWatermark } from '@/lib/watermark';
 import { smartDetect } from '@/lib/smartDetect';
 import { exportCanvas } from '@/lib/exportImage';
+
+// 原生端引导跳转到 Web 版的 demo 链接（GitHub Pages 部署）
+const WEB_DEMO_URL = 'https://zanwingmak.github.io/mosaic-guard/';
 
 export default function Editor() {
   const router = useRouter();
@@ -66,6 +70,18 @@ export default function Editor() {
 
   /** 触发对应工具的"扫描" */
   const runScan = useCallback(async () => {
+    // native 端没有 canvasEl，引导用户去 Web 版（原生 Skia 实现还没接入）
+    if (!canvasEl && Platform.OS !== 'web') {
+      Alert.alert(
+        'AI 检测仅在 Web 版可用',
+        '原生端 Skia 编辑器还在路上。先去浏览器试试 100% 端侧 AI？',
+        [
+          { text: '取消', style: 'cancel' },
+          { text: '在浏览器打开', onPress: () => Linking.openURL(WEB_DEMO_URL) },
+        ],
+      );
+      return;
+    }
     if (!canvasEl) return;
     setScanning(true);
     try {
@@ -97,7 +113,10 @@ export default function Editor() {
         );
       }
     } catch (err: any) {
-      alert(err?.message || '扫描失败');
+      // web 用 alert，native 用 Alert.alert（避免 ReferenceError）
+      const msg = err?.message || '扫描失败';
+      if (Platform.OS === 'web') alert(msg);
+      else Alert.alert('扫描失败', msg);
     } finally {
       setScanning(false);
     }
@@ -176,17 +195,33 @@ export default function Editor() {
   }, []);
 
   const onExport = useCallback(async () => {
+    // native 端没有 canvasEl，引导用户去 Web 版导出
+    if (!canvasEl && Platform.OS !== 'web') {
+      Alert.alert(
+        '导出仅在 Web 版可用',
+        '原生端导出将随 Skia 编辑器上线。先去浏览器导出？',
+        [
+          { text: '取消', style: 'cancel' },
+          { text: '在浏览器打开', onPress: () => Linking.openURL(WEB_DEMO_URL) },
+        ],
+      );
+      return;
+    }
     if (!canvasEl) return;
     try {
       await exportCanvas(canvasEl, `mosaic-guard-${Date.now()}.png`);
     } catch (err: any) {
-      alert(err?.message || '导出失败');
+      const msg = err?.message || '导出失败';
+      if (Platform.OS === 'web') alert(msg);
+      else Alert.alert('导出失败', msg);
     }
   }, [canvasEl]);
 
   const showAIBar = tool === 'smart' || tool === 'face' || tool === 'ocr' || tool === 'watermark';
   const { width: winW } = useWindowDimensions();
   const isMobile = winW < 768;
+  // native 端避开状态栏 / Home Indicator
+  const insets = useSafeAreaInsets();
 
   if (!image) return null;
 
@@ -207,7 +242,7 @@ export default function Editor() {
   ) : null;
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
       {/* 顶栏：移动端只留必要元素 */}
       <View style={[styles.topbar, isMobile && styles.topbarMobile]}>
         <Pressable

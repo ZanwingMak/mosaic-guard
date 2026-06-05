@@ -51,6 +51,48 @@ npm run android      # 需 Android Studio
 
 > Native 端目前展示图片预览与提示信息；完整的画笔 / AI 流水线放在 Web，下一版本接入
 > `@shopify/react-native-skia` 复用同一套 op 数据结构。
+> 在原生端点 AI 检测 / 导出按钮，会弹出确认框直接把你导到 Web 版（GitHub Pages）。
+
+---
+
+## 📱 iOS 本地真机 / 模拟器打包
+
+完整在本机走通的步骤（Xcode 26.5 / macOS Tahoe 15 / Apple Silicon 验证通过）：
+
+```bash
+# 1. 装 CocoaPods（如已装可跳过）
+brew install cocoapods
+
+# 2. 生成原生工程
+npx expo prebuild --platform ios
+
+# 3. 装 Pods（Podfile 里有自动 patch 处理 fmt 与 Xcode 26 不兼容的问题）
+cd ios && pod install && cd ..
+
+# 4. （首次）下载 iOS Simulator runtime，约 8.5 GB
+xcodebuild -downloadPlatform iOS
+
+# 5. 编译 + 安装到模拟器
+npx expo run:ios --device "iPhone 17 Pro"
+```
+
+> 如果 expo cli 在最后一步因 osascript 权限问题报错（"tell app System Events …"），编译本身其实已经成功，可以直接：
+> ```bash
+> # 单独起 Metro
+> npx expo start --dev-client
+> # 用 simctl 拉起 App + dev-client deeplink（不依赖 osascript 权限）
+> xcrun simctl launch booted com.maizhenying.mosaicguard
+> xcrun simctl openurl booted "com.maizhenying.mosaicguard://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081"
+> ```
+
+### 已踩过的坑
+
+| 问题 | 现象 | 解决 |
+| --- | --- | --- |
+| **fmt 与 Xcode 16+ 不兼容** | `call to consteval function 'fmt::basic_format_string' is not a constant expression` | `ios/Podfile` 的 `post_install` 已写自动 patch：把 `Pods/fmt/include/fmt/base.h` 的 `FMT_USE_CONSTEVAL` 强制改为 0。每次 `pod install` 自动应用。 |
+| **依赖版本错配** | 运行时 `Cannot find native module 'ExpoAsset'` | `expo-asset` / `expo-font` 误升到了 56.x（对应 SDK 56），项目实际是 SDK 52。用 `npx expo install --fix` 拉回兼容版本。 |
+| **iOS 图标全空** | native 端首页 / 工具栏所有图标不显示 | Icon.tsx 早期版本未集成 `react-native-svg`，native 直接返回空 View。现已切到 react-native-svg 统一两端渲染。 |
+| **首页顶部贴着状态栏** | 品牌名和状态栏时间重叠 | `index.tsx` / `editor.tsx` 改用 `useSafeAreaInsets()` 给顶部 / 底部加 inset。 |
 
 ---
 

@@ -1,6 +1,7 @@
 // 首页：Hero + 导入区 + 功能展示 + 隐私承诺
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Platform, useWindowDimensions } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { colors, font, spacing } from '@/theme';
 import { Icon } from '@/components/ui';
@@ -14,6 +15,8 @@ export default function Home() {
   const setImage = useEditor((s) => s.setImage);
   const { width: winW } = useWindowDimensions();
   const isMobile = winW < 768;
+  // native 端需要让顶部品牌栏避开状态栏 / 刘海
+  const insets = useSafeAreaInsets();
 
   // Web 端：Cmd+V 粘贴截图直接进入编辑器
   useEffect(() => {
@@ -42,7 +45,7 @@ export default function Home() {
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: colors.bg0 }}
-      contentContainerStyle={styles.scroll}
+      contentContainerStyle={[styles.scroll, { paddingTop: insets.top }]}
       showsVerticalScrollIndicator={false}
     >
       {/* 顶栏 */}

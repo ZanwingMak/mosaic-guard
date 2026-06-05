@@ -30,7 +30,10 @@
           "photosPermission": "MosaicGuard 需要访问相册以选择待打码的图片",
           "cameraPermission": "MosaicGuard 需要使用相机直接拍照打码"
         }
-      ]
+      ],
+      "expo-asset",
+      "expo-font",
+      "./plugins/withFmtPatch"
     ]
   }
 }
