@@ -9,6 +9,14 @@
 
 ---
 
+## 📸 截图
+
+| Web 桌面端 | iOS App | Android 手机布局 |
+| --- | --- | --- |
+| <img src="assets/screenshots/web-editor.png" alt="Web 桌面端编辑器截图" width="420" /> | <img src="assets/screenshots/ios-editor.png" alt="iOS App 编辑器截图" width="210" /> | <img src="assets/screenshots/android-web-preview.png" alt="Android 手机布局编辑器截图" width="210" /> |
+
+---
+
 ## ✨ 功能
 
 | 模块 | 能力 |
@@ -20,7 +28,7 @@
 | **隐藏水印检测** | LSB 位平面提取 + 分块熵 / 边缘密度分析，定位可能的隐写区域 |
 | **打码效果** | 像素化 / 高斯模糊 / 纯色遮挡 / Emoji 贴纸，强度可调 |
 | **编辑器** | 撤销 / 重做 / 清空 / 实时预览 |
-| **导出** | Web 直接下载 PNG；原生端将在下版接入相册保存 |
+| **导出** | Web 直接下载 PNG；iOS / Android 保存到系统相册 |
 
 ## 🛡️ 隐私
 
@@ -49,9 +57,8 @@ npm run ios          # 需本机 Xcode
 npm run android      # 需 Android Studio
 ```
 
-> Native 端目前展示图片预览与提示信息；完整的画笔 / AI 流水线放在 Web，下一版本接入
-> `@shopify/react-native-skia` 复用同一套 op 数据结构。
-> 在原生端点 AI 检测 / 导出按钮，会弹出确认框直接把你导到 Web 版（GitHub Pages）。
+> Native 端已接入 WebView Canvas 编辑器：支持画笔、框选、智选 / 人脸 / 文字 / 水印入口拖框打码，以及导出到系统相册。
+> 自动 AI 扫描能力仍在 Web 端运行；原生端先提供手动确认式打码闭环。
 
 ---
 
@@ -110,7 +117,7 @@ mosaic-guard/
     │   ├── home/                 # DropZone（拖拽上传）/ FeatureGrid（功能展示）
     │   └── editor/
     │       ├── EditorCanvas.web.tsx    # 双 canvas 画布（display + overlay）
-    │       ├── EditorCanvas.tsx        # 原生占位
+    │       ├── EditorCanvas.tsx        # 原生 WebView Canvas 编辑器
     │       ├── Toolbar.tsx             # 左侧工具选择栏
     │       ├── EffectPanel.tsx         # 右侧效果配置面板
     │       └── AIActionBar.tsx         # 底部 AI 扫描操作条
@@ -201,8 +208,8 @@ faceDetection.ts       ← 原生端占位
 
 | 项 | 现状 | 计划 |
 | --- | --- | --- |
-| 原生端编辑器 | 仅图片预览 + 提示 | v1.1 接入 `@shopify/react-native-skia` |
-| 原生端 AI | 不支持 | 用 ML Kit（iOS Vision / Android ML Kit）或 TF Lite |
+| 原生端编辑器 | WebView Canvas，可手动画笔 / 框选 / 导出相册 | 视性能情况评估是否接入 Skia |
+| 原生端 AI | 自动检测暂不支持，AI 工具入口可拖框打码 | 用 ML Kit（iOS Vision / Android ML Kit）或 TF Lite |
 | OCR 准确度 | 一般场景 ≈ 85% | v1.1 接入 PaddleOCR WASM 提升中文识别 |
 | 隐写检测 | 启发式分块熵 | v1.2 引入 DCT 频域分析、专门针对小红书 / 微博水印 pattern 训练 |
 | PWA | 暂未启用 | 加 manifest + service worker |
