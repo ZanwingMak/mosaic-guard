@@ -2,16 +2,18 @@
   "expo": {
     "name": "MosaicGuard",
     "slug": "mosaic-guard",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "scheme": "mosaicguard",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
+      "buildNumber": "2",
       "bundleIdentifier": "com.maizhenying.mosaicguard"
     },
     "android": {
+      "versionCode": 2,
       "package": "com.maizhenying.mosaicguard"
     },
     "web": {

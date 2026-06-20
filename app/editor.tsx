@@ -1,6 +1,6 @@
 // 编辑器主页面：组合左侧工具栏 + 中央画布 + 右侧效果面板 + 底部 AI 操作条
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, Pressable, Platform, useWindowDimensions, Alert, Linking } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Platform, useWindowDimensions, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { colors, font, radius, spacing } from '@/theme';
@@ -16,14 +16,12 @@ import { scanHiddenWatermark } from '@/lib/watermark';
 import { smartDetect } from '@/lib/smartDetect';
 import { exportCanvas } from '@/lib/exportImage';
 
-// 原生端引导跳转到 Web 版的 demo 链接（GitHub Pages 部署）
-const WEB_DEMO_URL = 'https://zanwingmak.github.io/mosaic-guard/';
-
 export default function Editor() {
   const router = useRouter();
   const image = useEditor((s) => s.image);
   const ops = useEditor((s) => s.ops);
   const tool = useEditor((s) => s.tool);
+  const setTool = useEditor((s) => s.setTool);
   const effect = useEditor((s) => s.effect);
   const strength = useEditor((s) => s.strength);
   const color = useEditor((s) => s.color);
@@ -34,7 +32,7 @@ export default function Editor() {
   const redo = useEditor((s) => s.redo);
   const clear = useEditor((s) => s.clear);
 
-  const [canvasEl, setCanvasEl] = useState<HTMLCanvasElement | null>(null);
+  const [canvasEl, setCanvasEl] = useState<any>(null);
   const [detections, setDetections] = useState<Detection[]>([]);
   const [selectedDetectionIds, setSelectedDetectionIds] = useState<Set<string>>(new Set());
   const [scanning, setScanning] = useState(false);
@@ -60,6 +58,12 @@ export default function Editor() {
     preloadOCR();
   }, []);
 
+  // App 端 AI 检测仍为占位，首次进入时默认给用户可直接操作的框选工具
+  useEffect(() => {
+    if (Platform.OS !== 'web' && tool === 'smart') setTool('rect');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // 切换工具时清空检测结果
   useEffect(() => {
     setDetections([]);
@@ -70,18 +74,6 @@ export default function Editor() {
 
   /** 触发对应工具的"扫描" */
   const runScan = useCallback(async () => {
-    // native 端没有 canvasEl，引导用户去 Web 版（原生 Skia 实现还没接入）
-    if (!canvasEl && Platform.OS !== 'web') {
-      Alert.alert(
-        'AI 检测仅在 Web 版可用',
-        '原生端 Skia 编辑器还在路上。先去浏览器试试 100% 端侧 AI？',
-        [
-          { text: '取消', style: 'cancel' },
-          { text: '在浏览器打开', onPress: () => Linking.openURL(WEB_DEMO_URL) },
-        ],
-      );
-      return;
-    }
     if (!canvasEl) return;
     setScanning(true);
     try {
@@ -195,21 +187,10 @@ export default function Editor() {
   }, []);
 
   const onExport = useCallback(async () => {
-    // native 端没有 canvasEl，引导用户去 Web 版导出
-    if (!canvasEl && Platform.OS !== 'web') {
-      Alert.alert(
-        '导出仅在 Web 版可用',
-        '原生端导出将随 Skia 编辑器上线。先去浏览器导出？',
-        [
-          { text: '取消', style: 'cancel' },
-          { text: '在浏览器打开', onPress: () => Linking.openURL(WEB_DEMO_URL) },
-        ],
-      );
-      return;
-    }
     if (!canvasEl) return;
     try {
       await exportCanvas(canvasEl, `mosaic-guard-${Date.now()}.png`);
+      if (Platform.OS !== 'web') Alert.alert('导出成功', '图片已保存到系统相册');
     } catch (err: any) {
       const msg = err?.message || '导出失败';
       if (Platform.OS === 'web') alert(msg);
@@ -217,7 +198,8 @@ export default function Editor() {
     }
   }, [canvasEl]);
 
-  const showAIBar = tool === 'smart' || tool === 'face' || tool === 'ocr' || tool === 'watermark';
+  const showAIBar =
+    Platform.OS === 'web' && (tool === 'smart' || tool === 'face' || tool === 'ocr' || tool === 'watermark');
   const { width: winW } = useWindowDimensions();
   const isMobile = winW < 768;
   // native 端避开状态栏 / Home Indicator
